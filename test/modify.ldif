@@ -1,0 +1,12 @@
+# Test file for auto ldapmodify and access to cn=config
+
+dn: olcDatabase={-1}frontend,cn=config
+changetype: modify
+replace: olcPasswordHash
+olcPasswordHash: {SSHA}
+olcPasswordHash: {CLEARTEXT}
+
+dn: cn=config
+changetype: modify
+replace: olcSaslAuxprops
+olcSaslAuxprops: slapd
