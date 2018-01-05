@@ -1,0 +1,9 @@
+# Test file auto ldapadd, substitution and access to database
+
+version: 2
+charset: UTF-8
+
+dn: ou=My OU,${LDAPBASE}
+objectclass: organizationalUnit
+objectclass: top
+ou: My OU
