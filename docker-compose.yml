@@ -5,6 +5,7 @@ services:
     image: bersace/openldap:latest
     environment:
       DEBUG: 1
+      LDAP_LOGLEVEL: "256"
       LDAP_ADMIN_PASSWORD: admin
       LDAP_DOMAIN: ldap.openldap.docker
       LDAP_ORGANISATION: ACME, Ltd
