@@ -13,7 +13,7 @@ catchall() {
 }
 
 retry() {
-    for i in {0..300} ; do
+    for i in {0..30} ; do
         $@ && return
         sleep $i
     done
