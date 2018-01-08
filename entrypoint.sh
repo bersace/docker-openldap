@@ -13,11 +13,46 @@ catchall() {
 }
 
 retry() {
-    for i in {0..300} ; do
+    for i in {0..30} ; do
         $@ && return
         sleep $i
     done
     $@
+}
+
+setup_tls() {
+    TLS_CERT=/var/lib/ldap/cert.pem
+    TLS_KEY=${TLS_CERT}
+    TLS_CACERT=${TLS_CERT}
+    # Beware: debian ships openldap with libgnutls. Use gnutls ciphers here.
+    TLS_CIPHERS=NORMAL:!NULL
+
+    openssl req -new -days 365 -nodes -x509 \
+            -subj "/C=FR/ST=None/L=None/CN=$LDAP_DOMAIN" \
+            -out $TLS_CERT -keyout $TLS_KEY
+    test -f $TLS_CERT
+    test -f $TLS_KEY
+    test -f ${TLS_CACERT}
+    chown openldap:openldap ${TLS_CERT} ${TLS_CACERT} ${TLS_KEY}
+
+    ldapmodify << EOF
+dn: cn=config
+changetype: modify
+replace: olcTLSCipherSuite
+olcTLSCipherSuite: ${TLS_CIPHERS}
+-
+add: olcTLSCACertificateFile
+olcTLSCACertificateFile: $TLS_CACERT
+-
+add: olcTLSCertificateFile
+olcTLSCertificateFile: $TLS_CERT
+-
+add: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: $TLS_KEY
+-
+add: olcTLSVerifyClient
+olcTLSVerifyClient: never
+EOF
 }
 
 
@@ -65,7 +100,7 @@ EOF
     slapd -h "${LDAPURI}" -u openldap -g openldap -d ${LDAP_LOGLEVEL} &
     retry test -S /run/slapd/ldapi
     # Check the connexion
-    ldapwhoami -d ${LDAP_LOGLEVEL}
+    retry ldapwhoami -d ${LDAP_LOGLEVEL}
 
     # Allow local users to manage database
     ldapmodify <<EOF
@@ -80,6 +115,8 @@ olcAccess: {1}to *
   by anonymous auth
   by * none
 EOF
+
+    setup_tls
 
     for f in $(find /docker-entrypoint-init.d/ -type f | sort); do
         case $f in
@@ -98,7 +135,7 @@ ulimit -n 1024
 
 ${EXEC+exec} \
     /usr/sbin/slapd \
-    -h "ldap://0.0.0.0" \
+    -h "ldap://0.0.0.0 ldaps://0.0.0.0" \
     -u openldap -g openldap \
     -d ${LDAP_LOGLEVEL} \
     $@
