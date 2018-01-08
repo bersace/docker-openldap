@@ -5,6 +5,7 @@ image.
 
 - Based on `debian:stretch-slim`.
 - Shipped with SASL modules.
+- Simple self-signed TLS for testing purpose.
 - Extensible with `/docker-entrypoint-init.d/`.
 
 

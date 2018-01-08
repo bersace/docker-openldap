@@ -10,12 +10,12 @@ clean:
 	docker-compose down -v
 	docker images --quiet $(NAME) | xargs --no-run-if-empty --verbose docker rmi -f
 
-debug:
-	docker-compose exec ldap /bin/bash
-
 dev:
 	docker-compose down -v
 	docker-compose up -d
+
+enter:
+	docker-compose exec ldap /bin/bash
 
 .PHONY: test
 test:

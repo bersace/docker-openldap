@@ -9,6 +9,8 @@ services:
       LDAP_ADMIN_PASSWORD: admin
       LDAP_DOMAIN: ldap.openldap.docker
       LDAP_ORGANISATION: ACME, Ltd
+    hostname: ldap
+    domainname: openldap.docker
     volumes:
     - ./my-bash-history:/root/.bash_history
     - ./entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
