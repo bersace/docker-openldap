@@ -65,7 +65,7 @@ EOF
     slapd -h "${LDAPURI}" -u openldap -g openldap -d ${LDAP_LOGLEVEL} &
     retry test -S /run/slapd/ldapi
     # Check the connexion
-    ldapwhoami -d ${LDAP_LOGLEVEL}
+    retry ldapwhoami -d ${LDAP_LOGLEVEL}
 
     # Allow local users to manage database
     ldapmodify <<EOF
