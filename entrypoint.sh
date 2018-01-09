@@ -65,7 +65,8 @@ fi
 
 : ${LDAP_LOGLEVEL:=256}
 
-if ! readlink -e /var/lib/ldap/*.bdb > /dev/null ; then
+# Check if database #1 exists
+if ! slapcat -n 1 -a cn=never_found 2>/dev/null; then
     export LDAP_BACKEND=${LDAP_BACKEND-hdb}
 
     # Bootstrap OpenLDAP configuration and data
