@@ -13,9 +13,11 @@ image.
 
 Some variables are mandatory for bootstrap.
 
-- **Mandatory**: `LDAP_ADMIN_PASSWORD` contains clear admin password.
-- **Mandatory**: `LDAP_DOMAIN`, the DNS style domain managed by the directory.
-- **Mandatory**: `LDAP_ORGANISATION`, the human readable name of the root organisation.
+- `LDAP_ADMIN_PASSWORD` contains clear admin password. Defaults to `admin`.
+- `LDAP_DOMAIN`, the DNS style domain managed by the directory. Defaults to
+  FQDN.
+- `LDAP_ORGANISATION`, the human readable name of the root organisation.
+  Defaults to `Unknown`.
 - `LDAP_BACKEND`: defaults to `mdb`.
 
 
@@ -31,5 +33,5 @@ In bootstrap scripts, you are root and can use OpenLDAP tools like `ldapsearch`,
 A temporary `slapd` instance is running on UNIX socket to use `ldap*` tools,
 avoid using `slapadd`.
 
-Entrypoint preprocess `.ldif` files with `envsubst`. `${LDAPBASE}` and
-`${LDAP_BACKEND}` are substituted.
+Entrypoint preprocess `.ldif` files with `envsubst`. `${LDAPBASE}`,
+`${LDAP_BACKEND}` and `${LDAP_DOMAIN}` are substituted.
