@@ -110,7 +110,7 @@ changetype: modify
 replace: olcAccess
 olcAccess: to attrs=userPassword by self write by anonymous auth by * none
 olcAccess: to *
-  by dn.children="cn=external,cn=auth" manage
+  by dn.children="cn=peercred,cn=external,cn=auth" manage
   by self write
   by users read
   by anonymous auth
