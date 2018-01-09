@@ -12,14 +12,17 @@ retry() {
 
 teardown() {
     docker logs openldap
-    docker rm --force --volumes openldap ||:
+    docker ps -q | xargs -rt docker rm --force --volumes
 }
 
 docker build -t bersace/openldap:latest .
+docker create -v /docker-entrypoint-init.d --name data alpine:3.4 /bin/true
+find test -type f | xargs -tI % docker cp % data:/docker-entrypoint-init.d/
 docker run \
        --name openldap --hostname ldap.openldap.docker \
        --rm --detach \
        --publish 389:389 --publish 636:636 \
+       --volumes-from data \
        bersace/openldap:latest
 trap teardown INT EXIT TERM
 docker ps
