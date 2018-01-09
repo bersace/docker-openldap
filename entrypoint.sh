@@ -67,6 +67,7 @@ fi
 
 # Check if database #1 exists
 if ! slapcat -n 1 -a cn=never_found 2>/dev/null; then
+    : ${LDAP_ADMIN_PASSWORD:=admin}
     export LDAP_BACKEND=${LDAP_BACKEND-mdb}
 
     # Bootstrap OpenLDAP configuration and data
