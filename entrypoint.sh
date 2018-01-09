@@ -97,11 +97,6 @@ EOF
     export LDAPBASE=${suffix_line#olcSuffix: }
     export LDAPSASL_MECH=EXTERNAL
     export LDAPURI=ldapi:///
-    cat > /root/.ldaprc << EOF
-BASE        ${LDAPBASE}
-SASL_MECH   ${LDAPSASL_MECH}
-URI         ${LDAPURI}
-EOF
 
     slapd -h "${LDAPURI}" -u openldap -g openldap -d ${LDAP_LOGLEVEL} &
     retry test -S /run/slapd/ldapi
