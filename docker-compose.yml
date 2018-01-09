@@ -6,7 +6,6 @@ services:
     environment:
       DEBUG: 1
       LDAP_LOGLEVEL: "256"
-      LDAP_DOMAIN: ldap.openldap.docker
       LDAP_ORGANISATION: ACME, Ltd
     hostname: ldap
     domainname: openldap.docker

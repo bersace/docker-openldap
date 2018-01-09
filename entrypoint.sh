@@ -69,6 +69,7 @@ fi
 if ! slapcat -n 1 -a cn=never_found 2>/dev/null; then
     : ${LDAP_ADMIN_PASSWORD:=admin}
     export LDAP_BACKEND=${LDAP_BACKEND-mdb}
+    export LDAP_DOMAIN=${LDAP_DOMAIN-$(hostname --fqdn)}
 
     # Bootstrap OpenLDAP configuration and data
     debconf-set-selections <<EOF

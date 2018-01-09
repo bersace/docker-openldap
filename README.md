@@ -14,7 +14,8 @@ image.
 Some variables are mandatory for bootstrap.
 
 - `LDAP_ADMIN_PASSWORD` contains clear admin password. Defaults to `admin`.
-- **Mandatory**: `LDAP_DOMAIN`, the DNS style domain managed by the directory.
+- `LDAP_DOMAIN`, the DNS style domain managed by the directory. Defaults to
+  FQDN.
 - **Mandatory**: `LDAP_ORGANISATION`, the human readable name of the root organisation.
 - `LDAP_BACKEND`: defaults to `mdb`.
 
