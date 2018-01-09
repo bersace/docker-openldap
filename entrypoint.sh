@@ -9,6 +9,26 @@ addormodify() {
     fi
 }
 
+bootstrap_database() {
+    debconf-set-selections <<EOF
+slapd slapd/internal/generated_adminpw password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/internal/adminpw password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/password2 password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/password1 password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION
+slapd slapd/backend string ${LDAP_BACKEND^^}
+slapd slapd/domain string ${LDAP_DOMAIN}
+slapd shared/organization string ${LDAP_ORGANISATION-Unknown}
+slapd slapd/purge_database boolean true
+slapd slapd/move_old_database boolean true
+slapd slapd/allow_ldap_v2 boolean false
+slapd slapd/no_configuration boolean false
+slapd slapd/dump_database select when needed
+EOF
+    dpkg-reconfigure -f noninteractive slapd
+
+}
+
 catchall() {
     tail -f /dev/null
 }
@@ -19,6 +39,22 @@ retry() {
         sleep $i
     done
     $@
+}
+
+setup_acl() {
+    # Allow local users to manage database
+    ldapmodify <<EOF
+dn: olcDatabase={1}${LDAP_BACKEND},cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: to attrs=userPassword by self write by anonymous auth by * none
+olcAccess: to *
+  by dn.children="cn=peercred,cn=external,cn=auth" manage
+  by self write
+  by users read
+  by anonymous auth
+  by * none
+EOF
 }
 
 setup_tls() {
@@ -71,57 +107,23 @@ if ! slapcat -n 1 -a cn=never_found 2>/dev/null; then
     export LDAP_BACKEND=${LDAP_BACKEND-mdb}
     export LDAP_DOMAIN=${LDAP_DOMAIN-$(hostname --fqdn)}
 
-    # Bootstrap OpenLDAP configuration and data
-    debconf-set-selections <<EOF
-slapd slapd/internal/generated_adminpw password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/internal/adminpw password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/password2 password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/password1 password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION
-slapd slapd/backend string ${LDAP_BACKEND^^}
-slapd slapd/domain string ${LDAP_DOMAIN}
-slapd shared/organization string ${LDAP_ORGANISATION-Unknown}
-slapd slapd/purge_database boolean true
-slapd slapd/move_old_database boolean true
-slapd slapd/allow_ldap_v2 boolean false
-slapd slapd/no_configuration boolean false
-slapd slapd/dump_database select when needed
-EOF
-    dpkg-reconfigure -f noninteractive slapd
+    bootstrap_database
+
+    base_line=$(slapcat -n1 | grep --max-count=1 ^dn)
+    export LDAPBASE=${base_line#dn: }
+    export LDAPSASL_MECH=EXTERNAL
+    export LDAPURI=ldapi:///
 
     # Now start a local slapd instance bound to unix socket only. This allow to
     # use ldapadd and ldapmodify instead of slapadd. That may change once
     # OpenLDAP 2.5 comes with slapmodify.
-
-    suffix_line=$(slapcat -n0 -s olcDatabase={1}${LDAP_BACKEND},cn=config | grep olcSuffix)
-    export LDAPBASE=${suffix_line#olcSuffix: }
-    export LDAPSASL_MECH=EXTERNAL
-    export LDAPURI=ldapi:///
-    cat > /root/.ldaprc << EOF
-BASE        ${LDAPBASE}
-SASL_MECH   ${LDAPSASL_MECH}
-URI         ${LDAPURI}
-EOF
 
     slapd -h "${LDAPURI}" -u openldap -g openldap -d ${LDAP_LOGLEVEL} &
     retry test -S /run/slapd/ldapi
     # Check the connexion
     retry ldapwhoami -d ${LDAP_LOGLEVEL}
 
-    # Allow local users to manage database
-    ldapmodify <<EOF
-dn: olcDatabase={1}${LDAP_BACKEND},cn=config
-changetype: modify
-replace: olcAccess
-olcAccess: to attrs=userPassword by self write by anonymous auth by * none
-olcAccess: to *
-  by dn.children="cn=external,cn=auth" manage
-  by self write
-  by users read
-  by anonymous auth
-  by * none
-EOF
-
+    setup_acl
     setup_tls
 
     for f in $(find /docker-entrypoint-init.d/ -type f | sort); do
