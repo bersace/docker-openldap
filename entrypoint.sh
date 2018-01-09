@@ -9,6 +9,26 @@ addormodify() {
     fi
 }
 
+bootstrap_database() {
+    debconf-set-selections <<EOF
+slapd slapd/internal/generated_adminpw password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/internal/adminpw password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/password2 password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/password1 password ${LDAP_ADMIN_PASSWORD}
+slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION
+slapd slapd/backend string ${LDAP_BACKEND^^}
+slapd slapd/domain string ${LDAP_DOMAIN}
+slapd shared/organization string ${LDAP_ORGANISATION-Unknown}
+slapd slapd/purge_database boolean true
+slapd slapd/move_old_database boolean true
+slapd slapd/allow_ldap_v2 boolean false
+slapd slapd/no_configuration boolean false
+slapd slapd/dump_database select when needed
+EOF
+    dpkg-reconfigure -f noninteractive slapd
+
+}
+
 catchall() {
     tail -f /dev/null
 }
@@ -87,23 +107,7 @@ if ! slapcat -n 1 -a cn=never_found 2>/dev/null; then
     export LDAP_BACKEND=${LDAP_BACKEND-mdb}
     export LDAP_DOMAIN=${LDAP_DOMAIN-$(hostname --fqdn)}
 
-    # Bootstrap OpenLDAP configuration and data
-    debconf-set-selections <<EOF
-slapd slapd/internal/generated_adminpw password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/internal/adminpw password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/password2 password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/password1 password ${LDAP_ADMIN_PASSWORD}
-slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION
-slapd slapd/backend string ${LDAP_BACKEND^^}
-slapd slapd/domain string ${LDAP_DOMAIN}
-slapd shared/organization string ${LDAP_ORGANISATION-Unknown}
-slapd slapd/purge_database boolean true
-slapd slapd/move_old_database boolean true
-slapd slapd/allow_ldap_v2 boolean false
-slapd slapd/no_configuration boolean false
-slapd slapd/dump_database select when needed
-EOF
-    dpkg-reconfigure -f noninteractive slapd
+    bootstrap_database
 
     base_line=$(slapcat -n1 | grep --max-count=1 ^dn)
     export LDAPBASE=${base_line#dn: }
