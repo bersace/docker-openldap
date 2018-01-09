@@ -1,7 +1,7 @@
 #!/bin/bash -eux
 
 addormodify() {
-    local substitutions='${LDAPBASE} ${LDAP_BACKEND}'
+    local substitutions='${LDAPBASE} ${LDAP_BACKEND} ${LDAP_DOMAIN}'
     if grep -q changetype $1 ; then
         envsubst "$substitutions" <$1 | ldapmodify
     else

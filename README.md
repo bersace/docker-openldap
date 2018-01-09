@@ -33,5 +33,5 @@ In bootstrap scripts, you are root and can use OpenLDAP tools like `ldapsearch`,
 A temporary `slapd` instance is running on UNIX socket to use `ldap*` tools,
 avoid using `slapadd`.
 
-Entrypoint preprocess `.ldif` files with `envsubst`. `${LDAPBASE}` and
-`${LDAP_BACKEND}` are substituted.
+Entrypoint preprocess `.ldif` files with `envsubst`. `${LDAPBASE}`,
+`${LDAP_BACKEND}` and `${LDAP_DOMAIN}` are substituted.
