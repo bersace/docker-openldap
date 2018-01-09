@@ -9,13 +9,14 @@ image.
 - Extensible with `/docker-entrypoint-init.d/`.
 
 
-## Mandatory configuration
+## Environment variables
 
-You **must** configure entrypoint with the following environment variables:
+Some variables are mandatory for bootstrap.
 
-- `LDAP_ADMIN_PASSWORD` contains clear admin password.
-- `LDAP_DOMAIN`, the DNS style domain managed by the directory.
-- `LDAP_ORGANISATION`, the human readable name of the root organisation.
+- **Mandatory**: `LDAP_ADMIN_PASSWORD` contains clear admin password.
+- **Mandatory**: `LDAP_DOMAIN`, the DNS style domain managed by the directory.
+- **Mandatory**: `LDAP_ORGANISATION`, the human readable name of the root organisation.
+- `LDAP_BACKEND`: defaults to `mdb`.
 
 
 ## Customizing Bootstrap
@@ -30,5 +31,5 @@ In bootstrap scripts, you are root and can use OpenLDAP tools like `ldapsearch`,
 A temporary `slapd` instance is running on UNIX socket to use `ldap*` tools,
 avoid using `slapadd`.
 
-Entrypoint preprocess `.ldif` files with `envsubst`. For now, only `${LDAPBASE}`
-is substituted.
+Entrypoint preprocess `.ldif` files with `envsubst`. `${LDAPBASE}` and
+`${LDAP_BACKEND}` are substituted.

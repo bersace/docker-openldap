@@ -1,10 +1,11 @@
 #!/bin/bash -eux
 
 addormodify() {
+    local substitutions='${LDAPBASE} ${LDAP_BACKEND}'
     if grep -q changetype $1 ; then
-        envsubst '${LDAPBASE}' <$1 | ldapmodify
+        envsubst "$substitutions" <$1 | ldapmodify
     else
-        envsubst '${LDAPBASE}' <$1 | ldapadd
+        envsubst "$substitutions" <$1 | ldapadd
     fi
 }
 
@@ -64,7 +65,10 @@ fi
 
 : ${LDAP_LOGLEVEL:=256}
 
-if ! readlink -e /var/lib/ldap/*.bdb > /dev/null ; then
+# Check if database #1 exists
+if ! slapcat -n 1 -a cn=never_found 2>/dev/null; then
+    export LDAP_BACKEND=${LDAP_BACKEND-mdb}
+
     # Bootstrap OpenLDAP configuration and data
     debconf-set-selections <<EOF
 slapd slapd/internal/generated_adminpw password ${LDAP_ADMIN_PASSWORD}
@@ -72,9 +76,9 @@ slapd slapd/internal/adminpw password ${LDAP_ADMIN_PASSWORD}
 slapd slapd/password2 password ${LDAP_ADMIN_PASSWORD}
 slapd slapd/password1 password ${LDAP_ADMIN_PASSWORD}
 slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION
+slapd slapd/backend string ${LDAP_BACKEND^^}
 slapd slapd/domain string ${LDAP_DOMAIN}
 slapd shared/organization string ${LDAP_ORGANISATION}
-slapd slapd/backend string HDB
 slapd slapd/purge_database boolean true
 slapd slapd/move_old_database boolean true
 slapd slapd/allow_ldap_v2 boolean false
@@ -87,7 +91,7 @@ EOF
     # use ldapadd and ldapmodify instead of slapadd. That may change once
     # OpenLDAP 2.5 comes with slapmodify.
 
-    suffix_line=$(slapcat -n0 -s olcDatabase={1}hdb,cn=config | grep olcSuffix)
+    suffix_line=$(slapcat -n0 -s olcDatabase={1}${LDAP_BACKEND},cn=config | grep olcSuffix)
     export LDAPBASE=${suffix_line#olcSuffix: }
     export LDAPSASL_MECH=EXTERNAL
     export LDAPURI=ldapi:///
@@ -104,7 +108,7 @@ EOF
 
     # Allow local users to manage database
     ldapmodify <<EOF
-dn: olcDatabase={1}hdb,cn=config
+dn: olcDatabase={1}${LDAP_BACKEND},cn=config
 changetype: modify
 replace: olcAccess
 olcAccess: to attrs=userPassword by self write by anonymous auth by * none
