@@ -80,7 +80,7 @@ slapd slapd/password1 password ${LDAP_ADMIN_PASSWORD}
 slapd slapd/dump_database_destdir string /var/backups/slapd-VERSION
 slapd slapd/backend string ${LDAP_BACKEND^^}
 slapd slapd/domain string ${LDAP_DOMAIN}
-slapd shared/organization string ${LDAP_ORGANISATION}
+slapd shared/organization string ${LDAP_ORGANISATION-Unknown}
 slapd slapd/purge_database boolean true
 slapd slapd/move_old_database boolean true
 slapd slapd/allow_ldap_v2 boolean false
