@@ -21,6 +21,22 @@ retry() {
     $@
 }
 
+setup_acl() {
+    # Allow local users to manage database
+    ldapmodify <<EOF
+dn: olcDatabase={1}${LDAP_BACKEND},cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: to attrs=userPassword by self write by anonymous auth by * none
+olcAccess: to *
+  by dn.children="cn=peercred,cn=external,cn=auth" manage
+  by self write
+  by users read
+  by anonymous auth
+  by * none
+EOF
+}
+
 setup_tls() {
     TLS_CERT=/var/lib/ldap/cert.pem
     TLS_KEY=${TLS_CERT}
@@ -103,20 +119,7 @@ EOF
     # Check the connexion
     retry ldapwhoami -d ${LDAP_LOGLEVEL}
 
-    # Allow local users to manage database
-    ldapmodify <<EOF
-dn: olcDatabase={1}${LDAP_BACKEND},cn=config
-changetype: modify
-replace: olcAccess
-olcAccess: to attrs=userPassword by self write by anonymous auth by * none
-olcAccess: to *
-  by dn.children="cn=peercred,cn=external,cn=auth" manage
-  by self write
-  by users read
-  by anonymous auth
-  by * none
-EOF
-
+    setup_acl
     setup_tls
 
     for f in $(find /docker-entrypoint-init.d/ -type f | sort); do
