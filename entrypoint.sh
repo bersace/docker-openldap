@@ -89,14 +89,14 @@ slapd slapd/dump_database select when needed
 EOF
     dpkg-reconfigure -f noninteractive slapd
 
+    base_line=$(slapcat -n1 | grep --max-count=1 ^dn)
+    export LDAPBASE=${base_line#dn: }
+    export LDAPSASL_MECH=EXTERNAL
+    export LDAPURI=ldapi:///
+
     # Now start a local slapd instance bound to unix socket only. This allow to
     # use ldapadd and ldapmodify instead of slapadd. That may change once
     # OpenLDAP 2.5 comes with slapmodify.
-
-    suffix_line=$(slapcat -n0 -s olcDatabase={1}${LDAP_BACKEND},cn=config | grep olcSuffix)
-    export LDAPBASE=${suffix_line#olcSuffix: }
-    export LDAPSASL_MECH=EXTERNAL
-    export LDAPURI=ldapi:///
 
     slapd -h "${LDAPURI}" -u openldap -g openldap -d ${LDAP_LOGLEVEL} &
     retry test -S /run/slapd/ldapi
