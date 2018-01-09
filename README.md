@@ -1,5 +1,7 @@
 # OpenLDAP Container Image
 
+[![CI](https://circleci.com/gh/bersace/docker-openldap.svg?style=shield)](https://circleci.com/gh/bersace/docker-openldap)
+
 This container image for OpenLDAP tries to be as simple as official Postgres
 image.
 
