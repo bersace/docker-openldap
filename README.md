@@ -1,6 +1,6 @@
 # OpenLDAP Container Image
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/bersace/openldap.svg)](https://hub.docker.com/r/bersace/openldap/)
+[![Docker Image](https://images.microbadger.com/badges/image/bersace/openldap.svg)](https://hub.docker.com/r/bersace/openldap)
 [![CI](https://circleci.com/gh/bersace/docker-openldap.svg?style=shield)](https://circleci.com/gh/bersace/docker-openldap)
 
 `bersace/openldap` tries to be as simple as official Postgres image.
