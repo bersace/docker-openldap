@@ -9,7 +9,6 @@ ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 RUN apt-get -y update \
     && LC_ALL=C DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       gettext-base \
-      gnutls-bin \
       ldap-utils \
       libsasl2-modules \
       libsasl2-modules-db \
