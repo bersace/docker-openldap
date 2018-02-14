@@ -1,0 +1,4 @@
+dn: ou=My OU,${LDAPBASE}
+objectclass: organizationalUnit
+objectclass: top
+ou: My OU
