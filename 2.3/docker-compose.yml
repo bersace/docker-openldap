@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  ldap:
+    image: bersace/openldap:2.3
+    environment:
+      DEBUG: 1
+      LDAP_LOGLEVEL: "256"
+      LDAP_ORGANISATION: ACME, Ltd
+    hostname: ldap
+    domainname: openldap.docker
+    volumes:
+    - ./my-bash-history:/root/.bash_history
+    - ./entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+    - ./test/:/docker-entrypoint-init.d
+    labels:
+      com.dnsdock.alias: ldap.openldap.docker
